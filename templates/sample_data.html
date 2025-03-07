@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AQI Sample Data</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.min.css" />
+
+  <style>
+    /* Gradient Background & Layout */
+    body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  background: url('https://img.freepik.com/free-photo/robot-hand-finger-ai-background-technology-graphics_53876-129793.jpg?t=st=1741330591~exp=1741334191~hmac=3643de098c47c8d6683f56bb0c9757e6764b80d11fe45eac542a63a0e1f66d12&w=1380') no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: #fff;
+  text-align: center;
+}
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Container Card */
+    .container {
+      background: rgba(1, 1, 1, 0.75);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      max-width: 1250px;
+      width: 90%;
+      margin-top: 20px;
+    }
+    h1 {
+      font-size: 2.5em;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .info p {
+      margin: 5px 0;
+      font-size: 1.1em;
+    }
+    .message {
+      color: #ff5f5f;
+      font-weight: bold;
+      margin: 15px 0;
+      font-size: 1.2em;
+    }
+
+    /* Predicted AQI Box styling */
+    #predicted-aqi-box {
+      margin: 20px auto;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      width: 90%;
+      text-align: center;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
+    /* Visibility Impact Box styling */
+    #visibility-box {
+      margin: 20px auto;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      width: 90%;
+      text-align: center;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
+    /* Map styling */
+    #aqiMap {
+      width: 100%;
+      height: 500px;
+      margin: 20px 0;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Table styling */
+    .aqi-table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 90%;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .aqi-table th, .aqi-table td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      color: #fff;
+    }
+    .aqi-table th {
+      background-color: rgba(0, 0, 0, 0.3);
+      font-weight: bold;
+    }
+    .aqi-table tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    .aqi-table tr:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+        /* Learn More Button styling */
+        .button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #ff9800, #ff5722);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .button:hover {
+      background: linear-gradient(135deg, #e65100, #bf360c);
+      transform: scale(1.05);
+    }
+
+
+    /* Back Button styling */
+    .back-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #a45fff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 16px;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .back-btn:hover {
+      background: #e05a5a;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>AQI Sample Data</h1>
+    <div class="info">
+      <p><strong>Location:</strong> {{ location }}</p>
+      <p><strong>Date:</strong> {{ date }}</p>
+    </div>
+
+    <!-- Predicted AQI Box -->
+    {% if predicted_aqi %}
+    <div id="predicted-aqi-box">
+      <p>🤖 <strong>Predicted AQI:</strong> {{ predicted_aqi }}</p>
+    </div>
+    {% endif %}
+
+    {% if message %}
+      <div class="message">{{ message }}</div>
+    {% endif %}
+
+    <!-- Display table data if available -->
+    {% if tables %}
+      {% for table in tables %}
+        {{ table|safe }}
+      {% endfor %}
+    {% else %}
+      <div class="message">No AQI data available for the selected location and date.</div>
+    {% endif %}
+
+    <!-- Visibility Impact Box -->
+    <div id="visibility-box">
+      <p>📢 <strong>Visibility Impact:</strong> <span id="visibility-range">Loading...</span></p>
+      <p id="visibility-message"></p>
+    </div>
+
+    <!-- The Leaflet Map Container -->
+    <div id="aqiMap"></div>
+
+    <!-- Back button -->
+    <a href="{{ url_for('home') }}" class="back-btn">Back</a>
+    
+    <a href="/aqi_solutions.html?location={{ location }}&date={{ date }}&aqi={{ predicted_aqi }}" class="button">Learn How to Improve AQI</a>
+
+
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.3/leaflet.js"></script>
+  <script>
+    // Parse the aqi_data JSON string passed from Flask
+    const aqiData = JSON.parse(`{{ aqi_data|safe }}`) || [];
+
+    // Helper function to determine marker color based on category
+    function getCategoryColor(category) {
+      switch(category) {
+        case "Good": return "#00e400";
+        case "Moderate": return "#ffff00";
+        case "Unhealthy for Sensitive Groups": return "#ff7e00";
+        case "Unhealthy": return "#ff0000";
+        case "Very Unhealthy": return "#99004c";
+        case "Hazardous": return "#7e0023";
+        default: return "#f03"; // fallback color
+      }
+    }
+
+    // Initialize the Leaflet map if data is available
+    if (aqiData.length > 0) {
+      const map = L.map("aqiMap").setView([aqiData[0].latitude, aqiData[0].longitude], 12);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: "© OpenStreetMap",
+      }).addTo(map);
+
+      aqiData.forEach(station => {
+        const markerColor = getCategoryColor(station.category || "Predicted");
+        const marker = L.circleMarker([station.latitude, station.longitude], {
+          radius: 8,
+          fillColor: markerColor,
+          color: "#000",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.8,
+        }).addTo(map);
+        marker.bindPopup(`
+          <strong>${station.station_name}</strong><br/>
+          AQI: ${station.aqi}<br/>
+          Category: ${station.category || "Predicted"}<br/>
+          Dominant: ${station.dominant_pollutant || "N/A"}
+        `);
+      });
+    }
+
+    // Function to compute visibility range based on AQI value
+    function getVisibilityRange(aqi) {
+      if (aqi <= 50) return { range: "10+ km", message: "No impact on visibility." };
+      if (aqi <= 100) return { range: "8 - 10 km", message: "Slight haze, minimal effect." };
+      if (aqi <= 150) return { range: "5 - 8 km", message: "Mild haze, reduced clarity." };
+      if (aqi <= 200) return { range: "3 - 5 km", message: "Significant haze, reduced visibility." };
+      if (aqi <= 300) return { range: "1 - 3 km", message: "Thick haze, difficult to see distant objects." };
+      return { range: "<1 km", message: "Severe smog, very low visibility." };
+    }
+
+    // Function to update the visibility info section
+    function updateVisibilityInfo() {
+      if (aqiData.length === 0) return;
+      const aqi = aqiData[0].aqi;
+      const { range, message } = getVisibilityRange(aqi);
+      const rangeElem = document.getElementById("visibility-range");
+      const messageElem = document.getElementById("visibility-message");
+      if (rangeElem) rangeElem.textContent = range;
+      if (messageElem) messageElem.textContent = message;
+    }
+
+    // Update visibility info on page load
+    updateVisibilityInfo();
+  </script>
+</body>
+</html>

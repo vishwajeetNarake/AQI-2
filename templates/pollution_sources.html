@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AQI Improvement Solutions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Basic styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Wrapper to position elements */
+    .image-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Background Image */
+    .image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* The content box */
+    .container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      max-width: 900px;
+      background: rgba(176, 190, 174, 0.8); /* Semi-transparent */
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .info p {
+      font-size: 1.1em;
+      margin: 10px 0;
+    }
+
+    .pollution-sources ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .pollution-sources li {
+      background: #ffffff;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #333;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Image Container -->
+  <div class="image-container">
+    <img src="https://images.unsplash.com/photo-1573132223210-d65883b944aa?q=80&w=2094&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Nature Image">
+
+    <!-- Content Box -->
+    <div class="container">
+      <header>
+        <h1>AQI Improvement Solutions</h1>
+      </header>
+      <div class="info">
+        <p><strong>Location:</strong> {{ location or 'Unknown Location' }}</p>
+        <p><strong>Date:</strong> {{ date or 'Not provided' }}</p>
+        <p><strong>Current AQI:</strong> {{ aqi }}</p>
+        <p><strong>Estimated Trees Needed:</strong> {{ trees_needed }}</p>
+      </div>
+      <div class="pollution-sources">
+        <h2>Likely Pollution Sources</h2>
+        <ul>
+          {% for source, percentage in pollution_sources.items() %}
+          <li><strong>{{ source }}:</strong> {{ percentage }}%</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <p>If you need further advice on improving local air quality, please consult our expert recommendations.</p>
+      <a href="{{ url_for('home') }}" class="back-btn">Back to Home</a>
+    </div>
+  </div>
+
+</body>
+</html>
